@@ -17,6 +17,7 @@ class LaravelJsonTranslationRepository implements TranslationRepository
 
     /** @var array<string, array<string>> */
     private array $fileCache = [];
+    private array $subdirCache = [];
 
     public function __construct(ConfigLoader $config)
     {
@@ -30,8 +31,10 @@ class LaravelJsonTranslationRepository implements TranslationRepository
     public function exists(Translation $translation, string $language): bool
     {
         $translations = $this->getTranslations($language);
+        $translationsFromSubdir = $this->getTranslationsFromSubdir($language);
 
-        return isset($translations[$translation->getKey()]);
+        return isset($translations[$translation->getKey()]) ||
+            isset($translationsFromSubdir[$translation->getKey()]);
     }
 
     /**
@@ -61,7 +64,7 @@ class LaravelJsonTranslationRepository implements TranslationRepository
      */
     private function getTranslations(string $language): array
     {
-        if (! isset($this->fileCache[$language])) {
+        if (!isset($this->fileCache[$language])) {
             $this->fileCache[$language] = $this->readFile($language);
         }
 
@@ -72,7 +75,7 @@ class LaravelJsonTranslationRepository implements TranslationRepository
     {
         $directory = $this->config->output();
 
-        return $directory."/{$language}.json";
+        return $directory . "/{$language}.json";
     }
 
     /**
@@ -84,13 +87,13 @@ class LaravelJsonTranslationRepository implements TranslationRepository
     {
         $filename = $this->getFileNameForLanguage($language);
 
-        if (! file_exists($filename)) {
+        if (!file_exists($filename)) {
             throw new TranslationFileDoesNotExistForLanguage($language);
         }
 
         $content = file_get_contents($filename);
 
-        if (! $content) {
+        if (!$content) {
             throw new InvalidTranslationFile($language);
         }
 
@@ -112,5 +115,49 @@ class LaravelJsonTranslationRepository implements TranslationRepository
             $this->getFileNameForLanguage($language),
             json_encode($content, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)
         );
+    }
+
+    /**
+     * @param string $language
+     * @return array
+     */
+    private function getTranslationsFromSubdir(string $language): array
+    {
+        if (isset($this->subdirCache[$language])) {
+            return $this->subdirCache[$language];
+        }
+
+        $directory = $this->config->output();
+        $translations = [];
+
+        foreach (glob($directory . "/{$language}/*.php") as $filename) {
+            $basename = basename($filename, '.php');
+            $translationsFromFile = include $filename;
+            $this->mergeKeysFromTranslations($translationsFromFile, $basename, $translations);
+        }
+
+        $this->subdirCache[$language] = $translations;
+
+
+        return $this->subdirCache[$language];
+    }
+
+    /**
+     * @param array $translationsFromFile
+     * @param string|null $startKey
+     * @param array $translations
+     * @return void
+     */
+    private function mergeKeysFromTranslations(array $translationsFromFile, string $startKey = null, array &$translations = []): void
+    {
+        foreach ($translationsFromFile as $key => $value) {
+            $startKeyWithKey = $startKey ? $startKey . '.' . $key : $key;
+
+            if (is_array($value)) {
+                $this->mergeKeysFromTranslations($value, $startKeyWithKey, $translations);
+            } else {
+                $translations[$startKeyWithKey] = $value;
+            }
+        }
     }
 }

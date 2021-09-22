@@ -21,7 +21,7 @@
     "phpunit/phpunit": "^9.0"
   },
   "scripts": {
-    "test:stan": "vendor/bin/phpstan analyse src --level=max --ansi",
+    "test:stan": "vendor/bin/phpstan analyse src --ansi",
     "test:unit": "vendor/bin/phpunit --testdox --color=always",
     "tests": [
       "@test:stan",
