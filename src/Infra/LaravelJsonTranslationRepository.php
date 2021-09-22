@@ -64,7 +64,7 @@ class LaravelJsonTranslationRepository implements TranslationRepository
      */
     private function getTranslations(string $language): array
     {
-        if (! isset($this->fileCache[$language])) {
+        if (!isset($this->fileCache[$language])) {
             $this->fileCache[$language] = $this->readFile($language);
         }
 
@@ -75,7 +75,7 @@ class LaravelJsonTranslationRepository implements TranslationRepository
     {
         $directory = $this->config->output();
 
-        return $directory."/{$language}.json";
+        return $directory . "/{$language}.json";
     }
 
     /**
@@ -87,13 +87,13 @@ class LaravelJsonTranslationRepository implements TranslationRepository
     {
         $filename = $this->getFileNameForLanguage($language);
 
-        if (! file_exists($filename)) {
+        if (!file_exists($filename)) {
             throw new TranslationFileDoesNotExistForLanguage($language);
         }
 
         $content = file_get_contents($filename);
 
-        if (! $content) {
+        if (!$content) {
             throw new InvalidTranslationFile($language);
         }
 
@@ -117,14 +117,14 @@ class LaravelJsonTranslationRepository implements TranslationRepository
         );
     }
 
-    private function getTranslationsFromSubdir($language)
+    private function getTranslationsFromSubdir(string $language): array
     {
-        if (! isset($this->subdirCache[$language])) {
+        if (!isset($this->subdirCache[$language])) {
             $directory = $this->config->output();
 
             $translations = [];
 
-            foreach (glob($directory."/{$language}/*.php") as $filename) {
+            foreach (glob($directory . "/{$language}/*.php") as $filename) {
                 $basename = basename($filename, '.php');
                 $translationsFromFile = include $filename;
                 $translations += $this->mergeKeysFromTranslations($translationsFromFile, $basename);
@@ -136,22 +136,15 @@ class LaravelJsonTranslationRepository implements TranslationRepository
         return $this->subdirCache[$language];
     }
 
-    private function mergeKeysFromTranslations($translations, $startKey=null, $sum=[])
+    private function mergeKeysFromTranslations($translations, $startKey = null, $sum = [])
     {
         foreach ($translations as $key => $value) {
+            $startKeyWithKey = $startKey ? $startKey . '.' . $key : $key;
+
             if (is_array($value)) {
-                if ($startKey) {
-                    $sum += $this->mergeKeysFromTranslations($value, $startKey . '.' . $key);
-                } else {
-                    $sum += $this->mergeKeysFromTranslations($value, $key);
-                }
+                $sum += $this->mergeKeysFromTranslations($value, $startKeyWithKey);
             } else {
-                if ($startKey) {
-                    $sum[$startKey . '.' . $key] = $value;
-                } else {
-                    $sum[$key] = $value;
-                }
-                //dump($sum);
+                $sum[$startKeyWithKey] = $value;
             }
         }
 
