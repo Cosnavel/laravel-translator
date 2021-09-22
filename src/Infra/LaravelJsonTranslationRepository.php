@@ -15,6 +15,7 @@ class LaravelJsonTranslationRepository implements TranslationRepository
 
     /** @var array<string, array<string>> */
     private array $fileCache = [];
+    private array $subdirCache = [];
 
     public function __construct(ConfigLoader $config)
     {
@@ -28,8 +29,10 @@ class LaravelJsonTranslationRepository implements TranslationRepository
     public function exists(Translation $translation, string $language): bool
     {
         $translations = $this->getTranslations($language);
+        $translationsFromSubdir = $this->getTranslationsFromSubdir($language);
 
-        return isset($translations[$translation->getKey()]);
+        return isset($translations[$translation->getKey()]) ||
+            isset($translationsFromSubdir[$translation->getKey()]);
     }
 
     /**
@@ -110,5 +113,22 @@ class LaravelJsonTranslationRepository implements TranslationRepository
             $this->getFileNameForLanguage($language),
             json_encode($content, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)
         );
+    }
+
+    private function getTranslationsFromSubdir($language)
+    {
+        if (! isset($this->subdirCache[$language])) {
+            $directory = $this->config->output();
+    
+            $translations = [];
+    
+            foreach(glob($directory."/{$language}/*.php") as $filename) {
+                $translations += include $filename;
+            }
+
+            $this->subdirCache[$language] = $translations;
+        }
+
+        return $this->subdirCache[$language];
     }
 }

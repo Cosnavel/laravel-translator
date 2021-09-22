@@ -68,6 +68,26 @@ class LaravelJsonTranslationRepositoryTest extends TestCase
         $this->assertTrue($exists);
     }
 
+    public function testWhenGivenARegisteredKeyThenExistsInSubdirIsTrue(): void
+    {
+        $translation = new Translation('date_format', '');
+        $language = 'fr';
+
+        $exists = $this->repository->exists($translation, $language);
+
+        $this->assertTrue($exists);
+    }
+
+    public function testWhenGivenARegisteredKeyThenExistsInSubdirByOtherFileIsTrue(): void
+    {
+        $translation = new Translation('date_format_2', '');
+        $language = 'fr';
+
+        $exists = $this->repository->exists($translation, $language);
+
+        $this->assertTrue($exists);
+    }
+
     public function testWhenTryingToSaveAKeyWhichAlreadyExistsThenThrowException(): void
     {
         $translation = new Translation("I'll be back", '');
