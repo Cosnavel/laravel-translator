@@ -117,6 +117,10 @@ class LaravelJsonTranslationRepository implements TranslationRepository
         );
     }
 
+    /**
+     * @param string $language
+     * @return array
+     */
     private function getTranslationsFromSubdir(string $language): array
     {
         if (isset($this->subdirCache[$language])) {
@@ -138,6 +142,12 @@ class LaravelJsonTranslationRepository implements TranslationRepository
         return $this->subdirCache[$language];
     }
 
+    /**
+     * @param array $translationsFromFile
+     * @param string|null $startKey
+     * @param array $translations
+     * @return void
+     */
     private function mergeKeysFromTranslations(array $translationsFromFile, string $startKey = null, array &$translations = []): void
     {
         foreach ($translationsFromFile as $key => $value) {
