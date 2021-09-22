@@ -29,9 +29,6 @@ jobs:
       if: steps.composer-cache.outputs.cache-hit != 'true'
       run: composer install --prefer-dist --no-progress --no-suggest
 
-    - name: Check code standards
-      run: composer run test:cs
-
     - name: Check static analysis
       run: composer run test:stan
 
