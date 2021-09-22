@@ -119,19 +119,21 @@ class LaravelJsonTranslationRepository implements TranslationRepository
 
     private function getTranslationsFromSubdir(string $language): array
     {
-        if (!isset($this->subdirCache[$language])) {
-            $directory = $this->config->output();
-
-            $translations = [];
-
-            foreach (glob($directory . "/{$language}/*.php") as $filename) {
-                $basename = basename($filename, '.php');
-                $translationsFromFile = include $filename;
-                $translations += $this->mergeKeysFromTranslations($translationsFromFile, $basename);
-            }
-
-            $this->subdirCache[$language] = $translations;
+        if (isset($this->subdirCache[$language])) {
+            return $this->subdirCache[$language];
         }
+
+        $directory = $this->config->output();
+        $translations = [];
+
+        foreach (glob($directory . "/{$language}/*.php") as $filename) {
+            $basename = basename($filename, '.php');
+            $translationsFromFile = include $filename;
+            $translations += $this->mergeKeysFromTranslations($translationsFromFile, $basename);
+        }
+
+        $this->subdirCache[$language] = $translations;
+
 
         return $this->subdirCache[$language];
     }
