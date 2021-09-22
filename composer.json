@@ -17,16 +17,13 @@
     "laravel/framework": ">=5.4.0"
   },
   "require-dev": {
-    "slevomat/coding-standard": "^6.0",
     "phpstan/phpstan": "^0.12",
     "phpunit/phpunit": "^9.0"
   },
   "scripts": {
-    "test:cs": "vendor/bin/phpcs --colors -ps",
     "test:stan": "vendor/bin/phpstan analyse src --level=max --ansi",
     "test:unit": "vendor/bin/phpunit --testdox --color=always",
     "tests": [
-      "@test:cs",
       "@test:stan",
       "@test:unit"
     ]
