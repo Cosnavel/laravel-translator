@@ -15,7 +15,7 @@ jobs:
       run: composer create-project --prefer-dist laravel/laravel blog
 
     - name: Require translator package
-      run: composer require thiagocordeiro/laravel-translator:dev-master -d blog/
+      run: composer require cosnavel/laravel-translator:main -d blog/
 
     - name: Copy Fixtures 1
       run: cp -R tests/Fixtures/App/Functions blog/app
