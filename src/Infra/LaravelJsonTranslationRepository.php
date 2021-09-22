@@ -137,19 +137,12 @@ class LaravelJsonTranslationRepository implements TranslationRepository
     private function mergeKeysFromTranslations($translations, $startKey=null, $sum=[])
     {
         foreach($translations as $key => $value) {
+            $startKeyWithKey = $startKey ? $startKey . '.' . $key : $key;
+
             if(is_array($value)) {
-                if($startKey) {
-                    $sum += $this->mergeKeysFromTranslations($value, $startKey . '.' . $key);
-                } else {
-                    $sum += $this->mergeKeysFromTranslations($value, $key);
-                }
+                $sum += $this->mergeKeysFromTranslations($value, $startKeyWithKey);
             } else {
-                if($startKey) {
-                    $sum[$startKey . '.' . $key] = $value;
-                } else {
-                    $sum[$key] = $value;
-                }
-                //dump($sum);
+                $sum[$startKeyWithKey] = $value;
             }
         }
         
