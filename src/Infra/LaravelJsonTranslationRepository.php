@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Translator\Infra;
 
@@ -119,10 +121,10 @@ class LaravelJsonTranslationRepository implements TranslationRepository
     {
         if (! isset($this->subdirCache[$language])) {
             $directory = $this->config->output();
-    
+
             $translations = [];
-    
-            foreach(glob($directory."/{$language}/*.php") as $filename) {
+
+            foreach (glob($directory."/{$language}/*.php") as $filename) {
                 $basename = basename($filename, '.php');
                 $translationsFromFile = include $filename;
                 $translations += $this->mergeKeysFromTranslations($translationsFromFile, $basename);
@@ -136,15 +138,15 @@ class LaravelJsonTranslationRepository implements TranslationRepository
 
     private function mergeKeysFromTranslations($translations, $startKey=null, $sum=[])
     {
-        foreach($translations as $key => $value) {
-            if(is_array($value)) {
-                if($startKey) {
+        foreach ($translations as $key => $value) {
+            if (is_array($value)) {
+                if ($startKey) {
                     $sum += $this->mergeKeysFromTranslations($value, $startKey . '.' . $key);
                 } else {
                     $sum += $this->mergeKeysFromTranslations($value, $key);
                 }
             } else {
-                if($startKey) {
+                if ($startKey) {
                     $sum[$startKey . '.' . $key] = $value;
                 } else {
                     $sum[$key] = $value;
@@ -152,7 +154,7 @@ class LaravelJsonTranslationRepository implements TranslationRepository
                 //dump($sum);
             }
         }
-        
+
         return $sum;
     }
 }
