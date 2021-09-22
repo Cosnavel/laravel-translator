@@ -123,12 +123,36 @@ class LaravelJsonTranslationRepository implements TranslationRepository
             $translations = [];
     
             foreach(glob($directory."/{$language}/*.php") as $filename) {
-                $translations += include $filename;
+                $basename = basename($filename, '.php');
+                $translationsFromFile = include $filename;
+                $translations += $this->mergeKeysFromTranslations($translationsFromFile, $basename);
             }
 
             $this->subdirCache[$language] = $translations;
         }
 
         return $this->subdirCache[$language];
+    }
+
+    private function mergeKeysFromTranslations($translations, $startKey=null, $sum=[])
+    {
+        foreach($translations as $key => $value) {
+            if(is_array($value)) {
+                if($startKey) {
+                    $sum += $this->mergeKeysFromTranslations($value, $startKey . '.' . $key);
+                } else {
+                    $sum += $this->mergeKeysFromTranslations($value, $key);
+                }
+            } else {
+                if($startKey) {
+                    $sum[$startKey . '.' . $key] = $value;
+                } else {
+                    $sum[$key] = $value;
+                }
+                //dump($sum);
+            }
+        }
+        
+        return $sum;
     }
 }
