@@ -10,6 +10,7 @@ use Translator\Infra\Exception\UnableToSaveTranslationKeyAlreadyExists;
 use Translator\Translator\ConfigLoader;
 use Translator\Translator\Translation;
 use Translator\Translator\TranslationRepository;
+use Illuminate\Support\Arr;
 
 class LaravelJsonTranslationRepository implements TranslationRepository
 {
@@ -133,31 +134,11 @@ class LaravelJsonTranslationRepository implements TranslationRepository
         foreach (glob($directory . "/{$language}/*.php") as $filename) {
             $basename = basename($filename, '.php');
             $translationsFromFile = include $filename;
-            $this->mergeKeysFromTranslations($translationsFromFile, $basename, $translations);
+            $translations[$basename] = $translationsFromFile;
         }
 
-        $this->subdirCache[$language] = $translations;
-
+        $this->subdirCache[$language] = Arr::dot($translations);
 
         return $this->subdirCache[$language];
-    }
-
-    /**
-     * @param array $translationsFromFile
-     * @param string|null $startKey
-     * @param array $translations
-     * @return void
-     */
-    private function mergeKeysFromTranslations(array $translationsFromFile, string $startKey = null, array &$translations = []): void
-    {
-        foreach ($translationsFromFile as $key => $value) {
-            $startKeyWithKey = $startKey ? $startKey . '.' . $key : $key;
-
-            if (is_array($value)) {
-                $this->mergeKeysFromTranslations($value, $startKeyWithKey, $translations);
-            } else {
-                $translations[$startKeyWithKey] = $value;
-            }
-        }
     }
 }
