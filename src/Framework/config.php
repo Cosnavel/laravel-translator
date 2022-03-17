@@ -11,7 +11,7 @@ return [
         app_path(),
         resource_path('views'),
     ],
-    'output' => resource_path('lang'),
+    'output' => app()->langPath(),
     'extensions' => ['php'],
     'container' => [
         'config_loader' => LaravelConfigLoader::class,
