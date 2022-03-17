@@ -32,6 +32,7 @@ class TranslationService
         $translations = $this->scanner->scan($extensions, $directories);
 
         $this->storeTranslations($translations);
+        $this->removeUnusedTranslations($translations);
     }
 
     /**
@@ -54,6 +55,24 @@ class TranslationService
             }
 
             $this->repository->save($translation, $language);
+        }, $languages);
+    }
+
+    /**
+     * @param Translation[] $translations
+     */
+    private function removeUnusedTranslations(array $requiredTranslations): void
+    {
+        $languages = $this->config->languages();
+
+        array_map(function (string $language) use ($requiredTranslations): void {
+            $translations = $this->repository->getTranslations($language);
+
+            foreach($translations as $translationKey => $translationValue) {
+                if(!array_key_exists($translationKey, $requiredTranslations)) {
+                    $this->repository->removeByKey($translationKey, $language);
+                }
+            }
         }, $languages);
     }
 }

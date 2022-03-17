@@ -128,4 +128,37 @@ class LaravelJsonTranslationRepositoryTest extends TestCase
 
         $this->repository->save($translation, 'ru');
     }
+
+    public function testWhenGivenARegisteredKeyThenRemove(): void
+    {
+        $translation = new Translation('You shall not pass', '');
+        $language = 'fr';
+
+        $exists = $this->repository->exists($translation, $language);
+        $this->assertFalse($exists);
+
+        $this->repository->save($translation, $language);
+
+        $exists = $this->repository->exists($translation, $language);
+        $this->assertTrue($exists);
+
+        $this->repository->removeByKey($translation->getKey(), $language);
+
+        $exists = $this->repository->exists($translation, $language);
+        $this->assertFalse($exists);
+    }
+
+    public function testWhenGivenARegisteredKeyThenRemoveNothingIfNotExists(): void
+    {
+        $translation = new Translation('Not exists', '');
+        $language = 'fr';
+
+        $exists = $this->repository->exists($translation, $language);
+        $this->assertFalse($exists);
+
+        $this->repository->removeByKey($translation->getKey(), $language);
+
+        $exists = $this->repository->exists($translation, $language);
+        $this->assertFalse($exists);
+    }
 }
