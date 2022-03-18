@@ -59,11 +59,27 @@ class LaravelJsonTranslationRepository implements TranslationRepository
     }
 
     /**
+     * @throws InvalidTranslationFile
+     * @throws TranslationFileDoesNotExistForLanguage
+     * @throws UnableToSaveTranslationKeyAlreadyExists
+     */
+    public function removeByKey(string $translationKey, string $language): void
+    {
+        $translations = $this->getTranslations($language);
+
+        unset($translations[$translationKey]);
+
+        $this->fileCache[$language] = $translations;
+
+        $this->writeFile($language);
+    }
+
+    /**
      * @throws TranslationFileDoesNotExistForLanguage
      * @throws InvalidTranslationFile
      * @return array<string>
      */
-    private function getTranslations(string $language): array
+    public function getTranslations(string $language): array
     {
         if (!isset($this->fileCache[$language])) {
             $this->fileCache[$language] = $this->readFile($language);
